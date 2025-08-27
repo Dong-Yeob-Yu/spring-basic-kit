@@ -1,0 +1,132 @@
+package smartwin.springbasickit.security.jwt;
+
+import com.auth0.jwt.JWT;
+import com.auth0.jwt.algorithms.Algorithm;
+import com.auth0.jwt.exceptions.JWTVerificationException;
+import com.auth0.jwt.interfaces.Claim;
+import jakarta.servlet.http.Cookie;
+import jakarta.servlet.http.HttpServletRequest;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.stereotype.Component;
+import smartwin.springbasickit.common.util.DeviceUtil;
+
+import java.nio.charset.StandardCharsets;
+import java.time.Duration;
+import java.time.Instant;
+import java.util.Arrays;
+import java.util.Date;
+import java.util.UUID;
+
+@Component
+@RequiredArgsConstructor
+@Slf4j
+public class JwtUtil {
+
+    private final JwtProperties jwtProperties;
+
+    /**
+     * Access Token 발급
+     *
+     * @param systemUserId - 유저 PK
+     * @return String
+     *
+     */
+    public String generateAccessToken(Long systemUserId, String userAgent) {
+
+        String device = DeviceUtil.resolve(userAgent);
+        Instant now = Instant.now();
+
+        return JWT.create()
+                  .withJWTId(UUID.randomUUID().toString())
+                  .withSubject(String.valueOf(systemUserId))
+                  .withClaim("device", device)
+                  .withClaim("type", "access")
+                  .withIssuer(jwtProperties.issuer())
+                  .withIssuedAt(now)
+                  .withExpiresAt(Date.from(now.plus(jwtProperties.accessTtl())))
+                  .sign(Algorithm.HMAC256(jwtProperties.secret().getBytes(StandardCharsets.UTF_8)));
+    }
+
+    /**
+     * 토큰에서 Claim 추출
+     *
+     * @param token     - accessToken
+     * @param claim     - 추출한 claim
+     * @param claimType - 추출할 타입
+     * @return claimType
+     *
+     */
+    public <T> T extractClaim(String token, String claim, Class<T> claimType) {
+
+        // 토큰, claim 값이 없으면 null 반환
+        if (token == null || token.isEmpty() || claim == null || claim.isEmpty()) {
+            return null;
+        }
+
+        try {
+            JWT.require(Algorithm.HMAC256(jwtProperties.secret().getBytes(StandardCharsets.UTF_8)))
+               .build()
+               .verify(token);
+        } catch (JWTVerificationException exception) {
+            return null;
+        }
+
+        Claim jwtClaim = JWT.decode(token).getClaim(claim);
+
+        if (claimType == String.class) {
+            return claimType.cast(jwtClaim.asString());
+        } else if (claimType == Integer.class) {
+            return claimType.cast(jwtClaim.asInt());
+        } else if (claimType == Long.class) {
+            return claimType.cast(jwtClaim.asLong());
+        }
+
+        throw new IllegalArgumentException("Unsupported claim type: " + claimType.getSimpleName());
+    }
+
+    /**
+     * HttpServletRequest 에서 Refresh Token 추출
+     * @param httpServletRequest - HttpServletRequest
+     * @return String
+     * */
+    public String extractRefreshTokenFromCookies(HttpServletRequest httpServletRequest) {
+
+        // at 가 없으면 null 반환
+        if(httpServletRequest.getCookies() == null) {
+            return null;
+        }
+
+        // rt_secret
+        return Arrays.stream(httpServletRequest.getCookies())
+                     .filter(cookie -> "rt_secret".equals(cookie.getName()))
+                     .map(Cookie::getValue)
+                     .findFirst()
+                     .orElse(null);
+    }
+
+    /**
+     * 토큰 만료 확인, 검증
+     * @param token - AccessToken
+     * @return boolean
+     * */
+    public boolean validateAccessToken(String token) {
+
+        if(token == null || token.isEmpty()) {
+            return false;
+        }
+
+        try {
+            JWT.require(Algorithm.HMAC256(jwtProperties.secret().getBytes(StandardCharsets.UTF_8)))
+               .build()
+               .verify(token);
+            return true;
+        } catch (JWTVerificationException verificationException) {
+            log.warn("[JWT 위조감지] {}", verificationException.getMessage());
+        }
+
+        return false;
+    }
+
+
+}
