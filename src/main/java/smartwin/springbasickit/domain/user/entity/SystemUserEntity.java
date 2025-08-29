@@ -25,5 +25,6 @@ public class SystemUserEntity extends BaseEntity {
 
     private String email;
 
+    private Long userRoleId;
 
 }
