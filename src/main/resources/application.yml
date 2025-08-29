@@ -1,9 +1,15 @@
 server:
   port: 8080
 
+spring:
+  profiles:
+    active: postgres
+
 security:
   jwt:
     secret: 12345
     issuer: spring-basic-kit (추후 변경 필요)
     access-ttl: 15m    # 15분
     refresh-days: 7d   # 7일
+
+
