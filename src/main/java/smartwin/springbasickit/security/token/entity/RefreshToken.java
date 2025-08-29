@@ -8,6 +8,7 @@ import org.hibernate.annotations.GenericGenerator;
 import org.springframework.data.domain.Persistable;
 import smartwin.springbasickit.common.entity.BaseEntityWithoutUpdatedAt;
 
+import java.time.Instant;
 import java.time.LocalDateTime;
 
 @Entity
@@ -16,18 +17,18 @@ import java.time.LocalDateTime;
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
 @Builder
-public class RefreshToken extends BaseEntityWithoutUpdatedAt implements Persistable<String> {
+public class RefreshToken extends BaseEntityWithoutUpdatedAt{
 
-    @Id
-    private String id;
+    @Id @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
 
-    @Column(nullable = false)
+    @Column(nullable = false,  unique = true)
     @Comment("해쉬화된 UUID, 쿠키에 저장된 secret 값이랑 비교")
     private String secretHash;
 
     @Column(nullable = false)
     @Comment("만료 기간")
-    private LocalDateTime expiredAt;
+    private Instant expiredAt;
 
     @Enumerated(EnumType.STRING)
     @Comment("토큰 타입 (PC, MOBILE)")
@@ -40,8 +41,4 @@ public class RefreshToken extends BaseEntityWithoutUpdatedAt implements Persista
     @Comment("무효화 여부 (true -> 무효화, false -> 비무효화)")
     private boolean isRevoked;
 
-    @Override
-    public boolean isNew() {
-        return this.getCreatedAt() == null;
-    }
 }
