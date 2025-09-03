@@ -4,6 +4,8 @@ import jakarta.persistence.*;
 import lombok.*;
 import smartwin.springbasickit.common.entity.BaseEntity;
 
+import java.time.Instant;
+
 @Entity
 @Table(name = "system_users")
 @Getter
@@ -15,6 +17,7 @@ public class SystemUserEntity extends BaseEntity {
     @Id @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    @Column(nullable = false, unique = true)
     private String loginId;
 
     private String loginPassword;
@@ -25,6 +28,6 @@ public class SystemUserEntity extends BaseEntity {
 
     private String email;
 
-    private Long userRoleId;
+    private Instant lastLoginAt;
 
 }

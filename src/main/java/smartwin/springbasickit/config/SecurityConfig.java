@@ -1,5 +1,7 @@
 package smartwin.springbasickit.config;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.boot.web.servlet.FilterRegistrationBean;
 import org.springframework.context.annotation.Bean;
@@ -19,6 +21,10 @@ import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.filter.CorsFilter;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
+import smartwin.springbasickit.common.exception.UnauthorizedException;
+import smartwin.springbasickit.common.exception.code.ErrorCode;
+import smartwin.springbasickit.common.filter.JwtAuthenticateFilter;
+import smartwin.springbasickit.common.response.ApiResponse;
 
 import java.util.List;
 
@@ -28,9 +34,10 @@ import java.util.List;
 @EnableMethodSecurity
 public class SecurityConfig {
 
+    private final JwtAuthenticateFilter jwtAuthenticateFilter;
 
     @Bean
-    public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
+    public SecurityFilterChain securityFilterChain(HttpSecurity http, PermitUrl permitUrl) throws Exception {
         http.csrf(AbstractHttpConfigurer::disable)
             .cors(cors -> cors.configurationSource(corsConfigurationSource())) // CORS 설정
 
@@ -43,10 +50,11 @@ public class SecurityConfig {
 
             .authorizeHttpRequests(auth -> {
                 auth.requestMatchers(HttpMethod.OPTIONS, "/**").permitAll(); // OPTIONS 요청은 모두 허용
-                auth.requestMatchers("/**").permitAll();
-            });
+                auth.requestMatchers(permitUrl.getPatterns().toArray(new String[0])).permitAll();
+                auth.anyRequest().authenticated();
+            })
 
-//            .addFilterBefore(jwtAuthenticateFilter, UsernamePasswordAuthenticationFilter.class);
+            .addFilterBefore(jwtAuthenticateFilter, UsernamePasswordAuthenticationFilter.class);
 
         return http.build();
     }

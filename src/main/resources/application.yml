@@ -4,12 +4,23 @@ server:
 spring:
   profiles:
     active: postgres
+  jpa:
+    hibernate:
+      ddl-auto: create
+    open-in-view: false
+    defer-datasource-initialization: true
+    show-sql: true
+
+  sql:
+    init:
+      mode: always  # 기본값은 embedded만 동작, always로 하면 항상 실행
 
 security:
   jwt:
     secret: 12345
     issuer: spring-basic-kit (추후 변경 필요)
-    access-ttl: 15m    # 15분
+    access-ttl: 10m    # 10분
     refresh-days: 7d   # 7일
+
 
 

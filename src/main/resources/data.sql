@@ -1,0 +1,1 @@
+INSERT INTO system_role (role, description, is_enabled) values ('ROLE_USER', '유저', true);

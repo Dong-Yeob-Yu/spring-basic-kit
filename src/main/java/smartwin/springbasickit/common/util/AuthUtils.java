@@ -19,7 +19,7 @@ public class AuthUtils {
      * 회원 ID 세션에서 추출
      *
      */
-    public static Long getMemberId() {
+    public static Long getSystemUserId() {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
 
 

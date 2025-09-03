@@ -5,22 +5,26 @@ import lombok.*;
 import org.hibernate.annotations.Comment;
 
 @Entity
-@Table(name = "system_user_role")
+@Table(name = "system_role")
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
 @Builder
-public class SystemUserRole {
+public class SystemRole {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Comment("시스템 유저 ID")
-    @Column(nullable = false)
-    private Long systemUserId;
+    @Comment("롤 설정 ex)ROLE_USER, ROLE_ADMIN 등등")
+    @Column(nullable = false, length = 64, unique = true)
+    private String role;
 
-    @Comment("시스템 롤 ID")
+    @Comment("설명")
+    private String description;
+
+    @Builder.Default
+    @Comment("활성화 여부(true, false)")
     @Column(nullable = false)
-    private Long systemRoleId;
+    private boolean isEnabled = true;
 }

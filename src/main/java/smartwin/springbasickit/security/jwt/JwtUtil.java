@@ -86,6 +86,26 @@ public class JwtUtil {
     }
 
     /**
+     * HttpServletRequest 에서 Access Token 추출
+     * @param httpServletRequest - HttpServletRequest
+     * @return String
+     * */
+    public String extractAccessTokenFromCookies(HttpServletRequest httpServletRequest) {
+
+        // at 가 없으면 null 반환
+        if(httpServletRequest.getCookies() == null) {
+            return null;
+        }
+
+        // rt_secret
+        return Arrays.stream(httpServletRequest.getCookies())
+                     .filter(cookie -> "AT".equals(cookie.getName()))
+                     .map(Cookie::getValue)
+                     .findFirst()
+                     .orElse(null);
+    }
+
+    /**
      * HttpServletRequest 에서 Refresh Token 추출
      * @param httpServletRequest - HttpServletRequest
      * @return String
@@ -99,7 +119,7 @@ public class JwtUtil {
 
         // rt_secret
         return Arrays.stream(httpServletRequest.getCookies())
-                     .filter(cookie -> "rt_secret".equals(cookie.getName()))
+                     .filter(cookie -> "RT".equals(cookie.getName()))
                      .map(Cookie::getValue)
                      .findFirst()
                      .orElse(null);
@@ -126,6 +146,15 @@ public class JwtUtil {
         }
 
         return false;
+    }
+
+    public String extractSystemUserId(String token) {
+
+        if(token == null || token.isEmpty()) {
+            return null;
+        }
+
+        return JWT.decode(token).getSubject();
     }
 
 

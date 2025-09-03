@@ -61,6 +61,9 @@ public class RefreshTokenService {
         return rt;
     }
 
+    /**
+     * 토큰 만료
+     * */
     @Transactional
     public void updateRevoked(Long id) {
         refreshTokenRepository.updateRevokedTrueById(id);
