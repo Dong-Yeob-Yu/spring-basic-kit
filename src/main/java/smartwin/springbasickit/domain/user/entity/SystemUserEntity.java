@@ -30,4 +30,8 @@ public class SystemUserEntity extends BaseEntity {
 
     private Instant lastLoginAt;
 
+    public void recordLastLoginAt() {
+        this.lastLoginAt = Instant.now();
+    }
+
 }

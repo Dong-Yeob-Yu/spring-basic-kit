@@ -8,6 +8,8 @@ import smartwin.springbasickit.security.token.entity.RefreshToken;
 import smartwin.springbasickit.security.token.entity.TokenType;
 
 import java.time.Instant;
+import java.util.List;
+import java.util.Optional;
 
 @Repository
 public interface RefreshTokenRepository extends JpaRepository<RefreshToken, Long> {
@@ -19,4 +21,8 @@ public interface RefreshTokenRepository extends JpaRepository<RefreshToken, Long
     @Modifying(clearAutomatically = true)
     @Query("UPDATE RefreshToken rs SET rs.isRevoked = true, rs.expiredAt = :now WHERE rs.systemUserId = :systemUserId AND rs.tokenType = :tokenType AND rs.isRevoked = false ")
     int updateTokenAtLogout(Long systemUserId, TokenType tokenType, Instant now);
+
+    Optional<RefreshToken> findBySecretHashAndExpiredAtAfterAndIsRevokedFalse(String secretHash, Instant expiredAtAfter);
+
+    Optional<RefreshToken> findBySecretHashAndExpiredAtAfterAndIsRevokedFalseAndTokenType(String secretHash, Instant expiredAtAfter, TokenType tokenType);
 }

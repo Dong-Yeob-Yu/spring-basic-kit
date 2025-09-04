@@ -11,6 +11,7 @@ public class PermitUrl {
 
     private final List<String> patterns = List.of(
             "/api/auth/login",
-            "/api/public/**"
+            "/api/public/**",
+            "/api/users"
     );
 }
