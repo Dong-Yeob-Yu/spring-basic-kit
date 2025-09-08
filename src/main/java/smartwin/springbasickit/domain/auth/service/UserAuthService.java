@@ -45,7 +45,6 @@ public class UserAuthService {
         SystemUserEntity systemUserEntity = systemUserRepository.findByLoginId(loginRequestDto.loginId())
                                                                 .orElseThrow(UserNotFoundException::new);
         systemUserEntity.recordLastLoginAt();
-        systemUserRepository.save(systemUserEntity);
         em.flush();
 
         if (!passwordEncoder.matches(loginRequestDto.password(), systemUserEntity.getLoginPassword())) {
