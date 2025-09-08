@@ -43,7 +43,7 @@ public class JwtAuthenticateFilter extends OncePerRequestFilter {
         boolean isValid = jwtUtil.validateAccessToken(accessToken);
 
         if (isValid) {
-            setAuthentication(Long.valueOf(jwtUtil.extractSystemUserId(accessToken)));
+            setAuthentication(Long.valueOf(jwtUtil.extractSystemUserId(accessToken)), accessToken);
             filterChain.doFilter(request, response);
         } else {
             // 토큰 만료
@@ -55,8 +55,8 @@ public class JwtAuthenticateFilter extends OncePerRequestFilter {
      * SecurityContextHolder에 SetAuthentication
      *
      */
-    private void setAuthentication(Long systemUserId) {
-        UserDetails userDetails = customUserDetailsService.loadUserByUsername(systemUserId);
+    private void setAuthentication(Long systemUserId, String accessToken) {
+        UserDetails userDetails = customUserDetailsService.loadUserByUsername(systemUserId, accessToken);
 
         UsernamePasswordAuthenticationToken usernamePasswordAuthenticationToken = new UsernamePasswordAuthenticationToken(
                 userDetails,

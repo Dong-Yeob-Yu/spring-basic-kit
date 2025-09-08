@@ -3,6 +3,9 @@ package smartwin.springbasickit.common.util;
 import org.springframework.http.ResponseCookie;
 
 import java.time.Duration;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
 
 public class CookieUtils {
 
@@ -17,6 +20,25 @@ public class CookieUtils {
                              .maxAge(maxAgeSeconds)
                              .sameSite("None") // 크로스 사이트 요청에 쿠키포함 여부
                              .build();
+    }
+
+    public static List<ResponseCookie> mapToCookieList(Map<String, String> map, Duration accessTTL, Duration refreshTTL) {
+        List<ResponseCookie> responseCookieList = new ArrayList<>();
+
+        ResponseCookie sid = CookieUtils.setResponseCookie(
+                "AT",
+                map.get("accessToken"),
+                accessTTL
+        );
+        responseCookieList.add(sid);
+        ResponseCookie authRt = CookieUtils.setResponseCookie(
+                "RT",
+                map.get("refreshToken"),
+                refreshTTL
+        );
+        responseCookieList.add(authRt);
+
+        return responseCookieList;
     }
 
 }

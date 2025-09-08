@@ -12,10 +12,10 @@ import org.springframework.stereotype.Component;
 import smartwin.springbasickit.common.util.DeviceUtil;
 
 import java.nio.charset.StandardCharsets;
-import java.time.Duration;
 import java.time.Instant;
 import java.util.Arrays;
 import java.util.Date;
+import java.util.List;
 import java.util.UUID;
 
 @Component
@@ -32,16 +32,19 @@ public class JwtUtil {
      * @return String
      *
      */
-    public String generateAccessToken(Long systemUserId, String userAgent) {
+    public String generateAccessToken(Long systemUserId, String userAgent, List<String> roles) {
 
         String device = DeviceUtil.resolve(userAgent);
         Instant now = Instant.now();
+
+        String[] roleArray = roles == null ? new String[0] : roles.toArray(new String[0]);
 
         return JWT.create()
                   .withJWTId(UUID.randomUUID().toString())
                   .withSubject(String.valueOf(systemUserId))
                   .withClaim("device", device)
                   .withClaim("type", "access")
+                  .withArrayClaim("roles", roleArray)
                   .withIssuer(jwtProperties.issuer())
                   .withIssuedAt(now)
                   .withExpiresAt(Date.from(now.plus(jwtProperties.accessTtl())))
@@ -80,6 +83,9 @@ public class JwtUtil {
             return claimType.cast(jwtClaim.asInt());
         } else if (claimType == Long.class) {
             return claimType.cast(jwtClaim.asLong());
+        } else if (claimType == List.class) {
+            // roles 같은 경우
+            return claimType.cast(jwtClaim.asList(String.class));
         }
 
         throw new IllegalArgumentException("Unsupported claim type: " + claimType.getSimpleName());
@@ -87,13 +93,15 @@ public class JwtUtil {
 
     /**
      * HttpServletRequest 에서 Access Token 추출
+     *
      * @param httpServletRequest - HttpServletRequest
      * @return String
-     * */
+     *
+     */
     public String extractAccessTokenFromCookies(HttpServletRequest httpServletRequest) {
 
         // at 가 없으면 null 반환
-        if(httpServletRequest.getCookies() == null) {
+        if (httpServletRequest.getCookies() == null) {
             return null;
         }
 
@@ -107,13 +115,15 @@ public class JwtUtil {
 
     /**
      * HttpServletRequest 에서 Refresh Token 추출
+     *
      * @param httpServletRequest - HttpServletRequest
      * @return String
-     * */
+     *
+     */
     public String extractRefreshTokenFromCookies(HttpServletRequest httpServletRequest) {
 
         // at 가 없으면 null 반환
-        if(httpServletRequest.getCookies() == null) {
+        if (httpServletRequest.getCookies() == null) {
             return null;
         }
 
@@ -127,12 +137,14 @@ public class JwtUtil {
 
     /**
      * 토큰 만료 확인, 검증
+     *
      * @param token - AccessToken
      * @return boolean
-     * */
+     *
+     */
     public boolean validateAccessToken(String token) {
 
-        if(token == null || token.isEmpty()) {
+        if (token == null || token.isEmpty()) {
             return false;
         }
 
@@ -150,7 +162,7 @@ public class JwtUtil {
 
     public String extractSystemUserId(String token) {
 
-        if(token == null || token.isEmpty()) {
+        if (token == null || token.isEmpty()) {
             return null;
         }
 

@@ -17,6 +17,7 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+import org.springframework.security.web.context.NullSecurityContextRepository;
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.filter.CorsFilter;
 import org.springframework.web.cors.CorsConfigurationSource;
@@ -42,6 +43,8 @@ public class SecurityConfig {
             .cors(cors -> cors.configurationSource(corsConfigurationSource())) // CORS 설정
 
             .formLogin(AbstractHttpConfigurer::disable) // 폼 로그인 X
+            .httpBasic(AbstractHttpConfigurer::disable) // Basic 비활성화
+            .securityContext(sc -> sc.securityContextRepository(new NullSecurityContextRepository())) // SecurityContext를 저장하지 않는 저장소
 
             .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS) // 세션 사용X
             )

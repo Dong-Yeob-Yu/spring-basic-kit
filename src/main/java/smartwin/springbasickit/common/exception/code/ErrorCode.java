@@ -9,6 +9,7 @@ import org.springframework.http.HttpStatus;
 public enum ErrorCode {
 
     DUPLICATE_ID("409_ID", "이미 사용 중인 ID입니다.", HttpStatus.CONFLICT),
+    DUPLICATE_RT("409_RT", "중복발급입니다.", HttpStatus.CONFLICT),
     USER_NOT_FOUND("404_USER", "사용자를 찾을 수 없습니다.", HttpStatus.NOT_FOUND),
     USERID_NOT_MATCH("404_USERID", "아이디 또는 비밀번호가 올바르지 않습니다.", HttpStatus.NOT_FOUND),
     INVALID_TOKEN("401_TOKEN", "유효하지 않은 토큰입니다.", HttpStatus.UNAUTHORIZED),

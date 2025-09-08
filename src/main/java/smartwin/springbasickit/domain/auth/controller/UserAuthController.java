@@ -1,5 +1,6 @@
 package smartwin.springbasickit.domain.auth.controller;
 
+import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
@@ -10,10 +11,14 @@ import org.springframework.http.ResponseCookie;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import smartwin.springbasickit.common.response.ApiResponse;
+import smartwin.springbasickit.common.util.CookieUtils;
 import smartwin.springbasickit.domain.auth.dto.LoginRequestDto;
 import smartwin.springbasickit.domain.auth.service.UserAuthService;
+import smartwin.springbasickit.security.jwt.JwtProperties;
+import smartwin.springbasickit.security.token.service.TokenService;
 
 import java.util.List;
+import java.util.Map;
 
 @RestController
 @RequiredArgsConstructor
@@ -21,6 +26,8 @@ import java.util.List;
 public class UserAuthController {
 
     private final UserAuthService userAuthService;
+    private final TokenService tokenService;
+    private final JwtProperties jwtProperties;
 
     @PostMapping("/login")
     public ResponseEntity<ApiResponse<Void>> login(HttpServletRequest request, HttpServletResponse response, @RequestBody @Valid LoginRequestDto loginRequestDto) {
@@ -43,5 +50,23 @@ public class UserAuthController {
 
         ApiResponse<Void> apiResponse = ApiResponse.success(204, "로그아웃 성공", null);
         return ResponseEntity.status(HttpStatus.NO_CONTENT).body(apiResponse);
+    }
+
+    @PostMapping("/reissue")
+    public ResponseEntity<ApiResponse<Void>> reissue(HttpServletRequest request, HttpServletResponse response) {
+        Map<String, String> stringStringMap = tokenService.refreshToken(request);
+
+        List<ResponseCookie> responseCookies = CookieUtils.mapToCookieList(
+                stringStringMap,
+                jwtProperties.accessTtl(),
+                jwtProperties.refreshDays()
+        );
+
+        responseCookies.forEach(responseCookie -> {
+            response.addHeader(HttpHeaders.SET_COOKIE, responseCookie.toString());
+        });
+
+        ApiResponse<Void> apiResponse = ApiResponse.success(200, "재발급 성공", null);
+        return ResponseEntity.status(HttpStatus.OK).body(apiResponse);
     }
 }
